@@ -1,0 +1,6 @@
+{
+  "name": "aris4.0",
+  "description": "A high-energy, gamified premium educational portal where secondary school students compete, grow, and master academic challenges with real-time XP telemetry and progress trackers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
