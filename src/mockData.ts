@@ -8,7 +8,13 @@ export const INITIAL_USER: UserProfile = {
   role: 'student',
   xp: 1250,
   streak: 4,
-  avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200&h=200'
+  streakFreezeCount: 2,
+  streakFreezeActive: false,
+  avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200&h=200',
+  badges: ['explorer'],
+  dailyMissionProgress: 2,
+  dailyMissionCompleted: false,
+  dailyMissionClaimed: false
 };
 
 export const INITIAL_LEADERBOARD: LeaderboardEntry[] = [

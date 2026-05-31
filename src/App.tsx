@@ -57,6 +57,10 @@ export default function App() {
   const [activePlayQuizId, setActivePlayQuizId] = useState<string | null>(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [aiInitialPrompt, setAiInitialPrompt] = useState<string>('');
+  const [streakSimulationNotification, setStreakSimulationNotification] = useState<{
+    text: string;
+    type: 'success' | 'error' | 'warning' | null;
+  }>({ text: '', type: null });
 
   // Synchronize localStorage on states update mutation
   useEffect(() => {
@@ -114,9 +118,24 @@ export default function App() {
     
     setStudentProfile((prev) => {
       const updatedXp = prev.xp + finalXp;
+      const earnedBadges: string[] = [];
+      if (updatedXp >= config.milestones.explorer) earnedBadges.push('explorer');
+      if (updatedXp >= config.milestones.champion) earnedBadges.push('champion');
+      if (updatedXp >= config.milestones.legend) earnedBadges.push('legend');
+
+      // Daily Mission progress: any correct math quiz problem (150 base XP) increments progress
+      let newProgress = prev.dailyMissionProgress ?? 0;
+      if (xpReward === 150) {
+        newProgress = Math.min(5, newProgress + 1);
+      }
+      const isCompletedNow = newProgress >= 5;
+
       return {
         ...prev,
-        xp: updatedXp
+        xp: updatedXp,
+        badges: earnedBadges,
+        dailyMissionProgress: newProgress,
+        dailyMissionCompleted: prev.dailyMissionCompleted || isCompletedNow
       };
     });
 
@@ -187,6 +206,139 @@ export default function App() {
     );
   };
 
+  // Streak Freeze management handlers
+  const handleToggleStreakFreezeActive = () => {
+    setStudentProfile((prev) => {
+      if (prev.streakFreezeActive) {
+        return {
+          ...prev,
+          streakFreezeActive: false,
+          streakFreezeCount: prev.streakFreezeCount + 1,
+        };
+      } else {
+        if (prev.streakFreezeCount <= 0) return prev;
+        return {
+          ...prev,
+          streakFreezeActive: true,
+          streakFreezeCount: prev.streakFreezeCount - 1,
+        };
+      }
+    });
+  };
+
+  const handlePurchaseStreakFreeze = () => {
+    const cost = 150;
+    if (studentProfile.xp < cost) return;
+
+    setStudentProfile((prev) => ({
+      ...prev,
+      xp: prev.xp - cost,
+      streakFreezeCount: prev.streakFreezeCount + 1,
+    }));
+
+    setLeaderboard((prev) => 
+      prev.map((player) => {
+        if (player.name.includes('(You)')) {
+          return {
+            ...player,
+            xp: Math.max(0, player.xp - cost)
+          };
+        }
+        return player;
+      })
+    );
+  };
+
+  const handleSimulateMissedDay = () => {
+    setStudentProfile((prev) => {
+      if (prev.streakFreezeActive) {
+        setStreakSimulationNotification({
+          text: `✨ Streak Protected! An active Streak Freeze shielded your streak of ${prev.streak} days. Your shield is now consumed.`,
+          type: "success"
+        });
+        return {
+          ...prev,
+          streakFreezeActive: false
+        };
+      } else if (prev.streakFreezeCount > 0) {
+        setStreakSimulationNotification({
+          text: `🛡️ Auto-Saved! You had a Streak Freeze in your inventory which was auto-consumed to protect your streak of ${prev.streak} days.`,
+          type: "success"
+        });
+        return {
+          ...prev,
+          streakFreezeCount: prev.streakFreezeCount - 1
+        };
+      } else {
+        setStreakSimulationNotification({
+          text: `😢 Oh no! You missed a day and had no Streak Freeze active or in your inventory. Your streak was reset to 0!`,
+          type: "error"
+        });
+        return {
+          ...prev,
+          streak: 0
+        };
+      }
+    });
+  };
+
+  // Daily Mission handlers
+  const handleProgressDailyMission = () => {
+    setStudentProfile((prev) => {
+      const prevProgress = prev.dailyMissionProgress ?? 0;
+      const targetProgress = 5;
+      const newProgress = Math.min(targetProgress, prevProgress + 1);
+      const isCompletedNow = newProgress >= targetProgress;
+      return {
+        ...prev,
+        dailyMissionProgress: newProgress,
+        dailyMissionCompleted: prev.dailyMissionCompleted || isCompletedNow
+      };
+    });
+  };
+
+  const handleClaimDailyMissionReward = () => {
+    const claimRewardXp = 250;
+    const finalRewardXp = Math.round(claimRewardXp * config.xpMultiplier);
+
+    setStudentProfile((prev) => {
+      if (prev.dailyMissionClaimed || !prev.dailyMissionCompleted) return prev;
+      const updatedXp = prev.xp + finalRewardXp;
+      const earnedBadges: string[] = [];
+      if (updatedXp >= config.milestones.explorer) earnedBadges.push('explorer');
+      if (updatedXp >= config.milestones.champion) earnedBadges.push('champion');
+      if (updatedXp >= config.milestones.legend) earnedBadges.push('legend');
+
+      return {
+        ...prev,
+        xp: updatedXp,
+        badges: earnedBadges,
+        dailyMissionClaimed: true
+      };
+    });
+
+    setLeaderboard((prev) => 
+      prev.map((player) => {
+        if (player.name.includes('(You)')) {
+          return {
+            ...player,
+            xp: player.xp + finalRewardXp
+          };
+        }
+        return player;
+      })
+    );
+  };
+
+  const handleResetDailyMission = () => {
+    setStudentProfile((prev) => ({
+      ...prev,
+      dailyMissionProgress: 0,
+      dailyMissionCompleted: false,
+      dailyMissionClaimed: false
+    }));
+  };
+
   // Admin metrics managers handlers
   const handleDeleteSimulatedUser = (userId: string) => {
     setSimulatedUsers((prev) => prev.filter((u) => u.id !== userId));
@@ -194,6 +346,16 @@ export default function App() {
 
   const handleUpdateConfigFromSettings = (newConfig: ConfigSettings) => {
     setConfig(newConfig);
+    setStudentProfile((prev) => {
+      const earnedBadges: string[] = [];
+      if (prev.xp >= newConfig.milestones.explorer) earnedBadges.push('explorer');
+      if (prev.xp >= newConfig.milestones.champion) earnedBadges.push('champion');
+      if (prev.xp >= newConfig.milestones.legend) earnedBadges.push('legend');
+      return {
+        ...prev,
+        badges: earnedBadges
+      };
+    });
   };
 
   return (
@@ -259,8 +421,17 @@ export default function App() {
                         quizzes={quizzes}
                         classes={classes}
                         leaderboard={leaderboard}
+                        config={config}
                         onSelectMathQuiz={() => setActiveTab('classes')}
                         onOpenEssayDetails={(msg) => openAiTutorWithPrompt(msg)}
+                        onToggleStreakFreeze={handleToggleStreakFreezeActive}
+                        onPurchaseStreakFreeze={handlePurchaseStreakFreeze}
+                        onSimulateMissedDay={handleSimulateMissedDay}
+                        streakSimulationNotification={streakSimulationNotification}
+                        onClearStreakSimulationNotification={() => setStreakSimulationNotification({ text: '', type: null })}
+                        onProgressDailyMission={handleProgressDailyMission}
+                        onClaimDailyMissionReward={handleClaimDailyMissionReward}
+                        onResetDailyMission={handleResetDailyMission}
                       />
                     )}
 
@@ -285,7 +456,20 @@ export default function App() {
                             {leaderboard.map((usr, index) => (
                               <div key={usr.name} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0">
                                 <div className="flex items-center gap-3">
-                                  <span className="font-sans font-bold text-[#64748B] w-6">{index + 1}</span>
+                                  <div className="font-sans font-bold text-[#64748B] w-8 flex flex-col items-center justify-center text-center">
+                                    <div>{index + 1}</div>
+                                    {usr.rankDelta !== undefined && (
+                                      <span className={`inline-flex items-center text-[9px] font-extrabold leading-none ${
+                                        usr.rankDelta > 0 
+                                          ? 'text-emerald-500' 
+                                          : usr.rankDelta < 0 
+                                            ? 'text-red-500' 
+                                            : 'text-slate-400'
+                                      }`}>
+                                        {usr.rankDelta > 0 ? `▲${usr.rankDelta}` : usr.rankDelta < 0 ? `▼${Math.abs(usr.rankDelta)}` : '•'}
+                                      </span>
+                                    )}
+                                  </div>
                                   <img src={usr.avatar} alt={usr.name} className="w-9 h-9 rounded-full object-cover" />
                                   <div>
                                     <p className="font-sans font-bold text-slate-800 text-xs">{usr.name}</p>
@@ -321,6 +505,66 @@ export default function App() {
                             <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
                               <p className="text-[10px] text-slate-400 font-bold uppercase">Work Streak</p>
                               <p className="font-sans font-bold text-lg text-emerald-650 mt-0.5">{studentProfile.streak} Days</p>
+                            </div>
+                          </div>
+
+                          {/* Profile Badges List Shelf */}
+                          <div className="border-t border-slate-100 pt-4 text-left">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase mb-2">Earned Milestones Badges</p>
+                            <div className="flex flex-col gap-2">
+                              {studentProfile.xp >= config.milestones.explorer ? (
+                                <div className="flex items-center gap-2 p-2 bg-teal-50 border border-teal-200 rounded-xl text-teal-950 font-sans text-xs">
+                                  <span className="text-base">🧭</span>
+                                  <div>
+                                    <span className="font-bold">XP Explorer Unlocked</span>
+                                    <p className="text-[10px] text-teal-600/80">Milestone Reached ({config.milestones.explorer} XP)</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 font-sans text-xs">
+                                  <span className="text-base">🔒</span>
+                                  <div>
+                                    <span className="font-semibold">XP Explorer Locked</span>
+                                    <p className="text-[10px] text-slate-400">Requires {config.milestones.explorer} XP</p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {studentProfile.xp >= config.milestones.champion ? (
+                                <div className="flex items-center gap-2 p-2 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-950 font-sans text-xs">
+                                  <span className="text-base">🏆</span>
+                                  <div>
+                                    <span className="font-bold">XP Champion Unlocked</span>
+                                    <p className="text-[10px] text-indigo-600/80">Milestone Reached ({config.milestones.champion} XP)</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 font-sans text-xs">
+                                  <span className="text-base">🔒</span>
+                                  <div>
+                                    <span className="font-semibold">XP Champion Locked</span>
+                                    <p className="text-[10px] text-slate-400">Requires {config.milestones.champion} XP</p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {studentProfile.xp >= config.milestones.legend ? (
+                                <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-950 font-sans text-xs">
+                                  <span className="text-base">👑</span>
+                                  <div>
+                                    <span className="font-bold">XP Legend Unlocked</span>
+                                    <p className="text-[10px] text-amber-600/80">Milestone Reached ({config.milestones.legend} XP)</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 font-sans text-xs">
+                                  <span className="text-base">🔒</span>
+                                  <div>
+                                    <span className="font-semibold">XP Legend Locked</span>
+                                    <p className="text-[10px] text-slate-400">Requires {config.milestones.legend} XP</p>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>

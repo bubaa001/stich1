@@ -8,7 +8,13 @@ export interface UserProfile {
   role: UserRole;
   xp: number;
   streak: number;
+  streakFreezeCount: number;
+  streakFreezeActive?: boolean;
   avatar: string;
+  badges?: string[];
+  dailyMissionProgress?: number;
+  dailyMissionCompleted?: boolean;
+  dailyMissionClaimed?: boolean;
 }
 
 export interface Quiz {
