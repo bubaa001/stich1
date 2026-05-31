@@ -7,47 +7,50 @@
   --font-display: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-indigo-50: #F5F5F4;
-  --color-indigo-100: #E5E5E3;
-  --color-indigo-200: #D4D4D0;
-  --color-indigo-300: #A3A39C;
-  --color-indigo-400: #73736B;
-  --color-indigo-500: #262624;
-  --color-indigo-600: #0A0A0A;
-  --color-indigo-650: #0A0A0A;
-  --color-indigo-700: #0A0A0A;
-  --color-indigo-750: #000000;
-  --color-indigo-800: #000000;
-  --color-indigo-900: #000000;
-  --color-indigo-950: #000000;
+  --color-indigo-50: #f8f9ff;
+  --color-indigo-100: #eff4ff;
+  --color-indigo-200: #e6eeff;
+  --color-indigo-300: #dee9fc;
+  --color-indigo-400: #dee9fc;
+  --color-indigo-500: #ab8ffe;
+  --color-indigo-600: #5308e7;
+  --color-indigo-605: #5308e7;
+  --color-indigo-650: #6c3bff;
+  --color-indigo-700: #3f1e8c;
+  --color-indigo-750: #27313f;
+  --color-indigo-80	: #121c2a;
+  --color-indigo-800: #121c2a;
+  --color-indigo-805: #121c2a;
+  --color-indigo-900: #121c2a;
+  --color-indigo-950: #121c2a;
 
-  --color-violet-50: #F5F5F4;
-  --color-violet-100: #E5E5E3;
-  --color-violet-200: #D4D4D0;
-  --color-violet-500: #0A0A0A;
-  --color-violet-600: #0A0A0A;
-  --color-violet-700: #000000;
+  --color-violet-50: #f8f9ff;
+  --color-violet-100: #eff4ff;
+  --color-violet-200: #dee9fc;
+  --color-violet-500: #6c3bff;
+  --color-violet-600: #5308e7;
+  --color-violet-700: #27313f;
 
-  --color-emerald-50: #F5F5F4;
-  --color-emerald-100: #E5E5E3;
-  --color-emerald-200: #A3A39C;
-  --color-emerald-400: #0A0A0A;
-  --color-emerald-600: #0A0A0A;
-  --color-emerald-800: #0A0A0A;
+  --color-emerald-50: #ffffff;
+  --color-emerald-100: #76ffc2;
+  --color-emerald-200: #4edea3;
+  --color-emerald-400: #007650;
+  --color-emerald-600: #005b3d;
+  --color-emerald-800: #002113;
 }
 
-/* Custom design system parameters in tone with Bold Typography */
+/* Custom design system parameters in tone with Bold Typography + custom colors */
 :root {
-  --color-primary: #0A0A0A;
-  --color-secondary: #262624;
-  --color-background-tint: #F5F5F4;
-  --color-text-dark: #0A0A0A;
+  --color-primary: #5308e7;
+  --color-secondary: #674bb5;
+  --color-background-tint: #f8f9ff;
+  --color-text-dark: #121c2a;
 }
 
-/* Core HTML structural elements for the Bold Typography Look */
+/* Core HTML structural elements for the Custom Color Palette Look */
 body, html {
-  background-color: #F5F5F4 !important;
-  color: #0A0A0A !important;
+  background-color: #f8f9ff !important;
+  color: #121c2a !important;
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important;
 }
 
@@ -56,49 +59,59 @@ h1, h2, h3, h4, .font-display {
   font-family: "Inter", sans-serif !important;
   text-transform: uppercase !important;
   letter-spacing: -0.03em !important;
-  font-weight: 900 !important;
-  color: #0A0A0A !important;
+  font-weight: 750 !important;
+  color: #121c2a !important;
 }
 
-/* Override standard components to make them boxy and bold */
+/* Override standard components to make them beautifully rounded and clean */
 button, input, select, textarea {
-  border-radius: 0px !important;
+  border-radius: 12px !important;
 }
 
 /* Double XP surge notification and other banners */
 .bg-gradient-to-r {
-  background: #0A0A0A !important;
-  border-bottom: 2px solid #FFFFFF !important;
+  background: linear-gradient(135deg, #5308e7 0%, #6c3bff 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 header, nav {
-  background-color: #FFFFFF !important;
-  border-bottom: 2px solid #0A0A0A !important;
-  box-shadow: none !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #dee9fc !important;
+  box-shadow: 0px 4px 20px rgba(18, 28, 42, 0.03) !important;
 }
 
-/* Brutalist Card Styles */
+/* Modern Rounded Card Styles */
 .card-shadow {
-  border: 2px solid #0A0A0A !important;
-  box-shadow: 4px 4px 0px 0px rgba(10, 10, 10, 1) !important;
-  border-radius: 0px !important;
-  background-color: #FFFFFF !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  border: 1px solid #dee9fc !important;
+  box-shadow: 0px 10px 30px rgba(99, 46, 246, 0.05) !important;
+  border-radius: 16px !important;
+  background-color: #ffffff !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .card-shadow:hover {
-  transform: translate(-2px, -2px) !important;
-  box-shadow: 6px 6px 0px 0px rgba(10, 10, 10, 1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0px 14px 35px rgba(99, 46, 246, 0.09) !important;
 }
 
-/* Replace rounded states on interactive utility slots */
-.rounded-3xl, .rounded-2xl, .rounded-xl, .rounded-lg {
-  border-radius: 0px !important;
+/* Ensure round states inside elements */
+.rounded-3xl {
+  border-radius: 20px !important;
 }
-
-/* Override pill badges and progress indicators to be flat and black outline */
+.rounded-2xl {
+  border-radius: 16px !important;
+}
+.rounded-xl {
+  border-radius: 12px !important;
+}
+.rounded-lg {
+  border-radius: 8px !important;
+}
+.rounded-md {
+  border-radius: 6px !important;
+}
 .rounded-full {
-  border-radius: 0px !important;
+  border-radius: 9999px !important;
 }
 
 /* Shimmer styling */
@@ -129,9 +142,10 @@ header, nav {
 }
 
 .purple-card-gradient {
-  background: #0A0A0A !important;
+  background: linear-gradient(135deg, #5308e7 0%, #6c3bff 100%) !important;
   color: #FFFFFF !important;
-  border: 2px solid #0A0A0A !important;
+  border: none !important;
+  border-radius: 16px !important;
 }
 
 .active-tab-indicator {
@@ -140,8 +154,8 @@ header, nav {
   left: 0;
   height: 4px;
   width: 100%;
-  background-color: #0A0A0A !important;
-  border-radius: 0px !important;
+  background-color: #5308e7 !important;
+  border-radius: 4px 4px 0px 0px !important;
 }
 
 /* Shaking animation for incorrect quiz choices */
@@ -194,9 +208,10 @@ header, nav {
 }
 
 .border-ink {
-  border-color: #0A0A0A !important;
-  border-width: 2px !important;
+  border-color: #5308e7 !important;
+  border-width: 1px !important;
   border-style: solid !important;
+  border-radius: 12px !important;
 }
 
 /* No scrollbar utility */
